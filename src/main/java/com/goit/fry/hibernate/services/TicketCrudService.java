@@ -1,38 +1,37 @@
 package com.goit.fry.hibernate.services;
 
-import com.goit.fry.hibernate.HibernateUtil;
+import com.goit.fry.hibernate.TransactionWrapper;
+import com.goit.fry.hibernate.entities.Client;
+import com.goit.fry.hibernate.entities.Planet;
 import com.goit.fry.hibernate.entities.Ticket;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
-public class TicketCrudService {
+import java.time.LocalDateTime;
 
-	public Ticket create() {
+public class TicketCrudService extends BasicService<Ticket, Long> {
 
-		return null;
+	public TicketCrudService() {
+
+		super(Ticket.class);
 	}
 
-	public Ticket readById(long id) {
+	public Ticket create(Client client, Planet fromPlanet, Planet toPlanet) {
 
-		Ticket ticket;
-		try(Session session = HibernateUtil.getInst().getSessionFactory().openSession()) {
-
-			ticket = session.get(Ticket.class, id);
-		}
-		return ticket;
+		Ticket ticket = Ticket.builder()
+							.client(client)
+							.fromPlanet(fromPlanet)
+							.toPlanet(toPlanet)
+							.createdAt(LocalDateTime.now())
+							.build();
+		return create(ticket);
 	}
 
-	public void update(long id) {
+	public void update(long id, Client newClient) {
 
-	}
+		try(TransactionWrapper transaction = new TransactionWrapper()) {
 
-	public void delete(long id) {
-
-		Ticket ticket = Ticket.builder().id(id).build();
-		try(Session session = HibernateUtil.getInst().getSessionFactory().openSession()) {
-
-			Transaction transaction = session.beginTransaction();
-			session.remove(ticket);
+			Ticket ticket = transaction.getSession().get(Ticket.class, id);
+			ticket.setClient(newClient);
+			transaction.getSession().merge(ticket);
 			transaction.commit();
 		}
 	}

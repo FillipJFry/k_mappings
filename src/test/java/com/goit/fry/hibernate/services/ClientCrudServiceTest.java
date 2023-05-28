@@ -3,6 +3,8 @@ package com.goit.fry.hibernate.services;
 import com.goit.fry.hibernate.FlywayMigration;
 import com.goit.fry.hibernate.HibernateUtil;
 import com.goit.fry.hibernate.entities.Client;
+import com.goit.fry.hibernate.entities.Planet;
+import com.goit.fry.hibernate.entities.Ticket;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,6 +66,63 @@ class ClientCrudServiceTest {
 
 		assertEquals(id, client.getId());
 		assertEquals("Bob", client.getName());
+	}
+
+	@Test
+	void readAll() {
+
+		srv.deleteAll();
+		srv.create("Alice");
+		srv.create("Bob");
+		srv.create("Mallory");
+		List<Client> clients = srv.readAll();
+
+		clients.sort(new Comparator<Client>() {
+			@Override
+			public int compare(Client l, Client r) {
+				return (int)(l.getId() - r.getId());
+			}
+		});
+
+		assertEquals(3, clients.size());
+		assertEquals("Alice", clients.get(0).getName());
+		assertEquals("Bob", clients.get(1).getName());
+		assertEquals("Mallory", clients.get(2).getName());
+	}
+
+	@Test
+	void getTicketsList() {
+
+		TicketCrudService ticket_srv = new TicketCrudService();
+		Client musk = srv.readByName("Elon Musk");
+		assertNotNull(musk.getTickets());
+		assertEquals(1, musk.getTickets().size());
+		Ticket t1 = musk.getTickets().get(0);
+
+		PlanetCrudService planet_srv = new PlanetCrudService();
+		Planet from = planet_srv.readById("MARS");
+		Planet to = planet_srv.readById("ERTH");
+		Planet to2 = planet_srv.readById("TTN");
+
+		Ticket t2 = ticket_srv.create(musk, from, to);
+		Ticket t3 = ticket_srv.create(musk, to, to2);
+
+		assertEquals(1, musk.getTickets().size());
+		musk = srv.readByName("Elon Musk");
+		List<Ticket> tickets = musk.getTickets();
+		assertNotNull(tickets);
+		assertEquals(3, tickets.size());
+
+		tickets.sort(new Comparator<Ticket>() {
+			@Override
+			public int compare(Ticket l, Ticket r) {
+
+				return (int)(l.getId() - r.getId());
+			}
+		});
+		assertEquals(t1.getId(), tickets.get(0).getId());
+		assertEquals(t2.getId(), tickets.get(1).getId());
+		assertEquals(t3.getId(), tickets.get(2).getId());
 	}
 
 	@Test

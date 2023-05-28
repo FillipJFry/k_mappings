@@ -1,9 +1,6 @@
 package com.goit.fry.hibernate.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,13 +17,17 @@ import java.time.LocalDateTime;
 public class Ticket {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	@Column(name = "created_at")
-	private LocalDateTime created_at;
-	@Column(name = "client_id")
-	private long clientId;
-	@Column(name = "from_planet_id")
-	private String fromPlanetId;
-	@Column(name = "to_planet_id")
-	private String toPlanetId;
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "client_id", nullable = false)
+	private Client client;
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "from_planet_id", nullable = false)
+	private Planet fromPlanet;
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "to_planet_id", nullable = false)
+	private Planet toPlanet;
 }

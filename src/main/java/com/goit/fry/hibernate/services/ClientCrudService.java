@@ -1,54 +1,39 @@
 package com.goit.fry.hibernate.services;
 
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import com.goit.fry.hibernate.HibernateUtil;
 import com.goit.fry.hibernate.entities.Client;
+import org.hibernate.query.Query;
 
-public class ClientCrudService {
+public class ClientCrudService extends BasicService<Client, Long> {
+
+	public ClientCrudService() {
+
+		super(Client.class);
+	}
 
 	public Client create(String clientName) {
 
 		Client client = Client.builder().name(clientName).build();
-		try(Session session = HibernateUtil.getInst().getSessionFactory().openSession()) {
-
-			Transaction transaction = session.beginTransaction();
-			session.persist(client);
-			transaction.commit();
-		}
-		return client;
+		return create(client);
 	}
 
-	public Client readById(long id) {
+	public Client readByName(String clientName) {
 
-		Client client;
+		Client v;
 		try(Session session = HibernateUtil.getInst().getSessionFactory().openSession()) {
 
-			client = session.get(Client.class, id);
+			Query<Client> query = session.createQuery("from Client where name=:cliName", Client.class);
+			query.setParameter("cliName", clientName);
+			v = query.uniqueResult();
 		}
-		return client;
+		return v;
 	}
 
 	public void update(long id, String newName) {
 
 		Client client = Client.builder().id(id).name(newName).build();
-		try(Session session = HibernateUtil.getInst().getSessionFactory().openSession()) {
-
-			Transaction transaction = session.beginTransaction();
-			session.merge(client);
-			transaction.commit();
-		}
-	}
-
-	public void delete(long id) {
-
-		Client client = Client.builder().id(id).build();
-		try(Session session = HibernateUtil.getInst().getSessionFactory().openSession()) {
-
-			Transaction transaction = session.beginTransaction();
-			session.remove(client);
-			transaction.commit();
-		}
+		update(client);
 	}
 }
