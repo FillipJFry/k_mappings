@@ -1,16 +1,16 @@
 package com.goit.fry.hibernate.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "clients")
 @Data
+@EqualsAndHashCode(exclude = {"name", "tickets"})
+@ToString(exclude = {"tickets"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -22,7 +22,8 @@ public class Client {
 	@Column(name="name", length = 200)
 	private String name;
 
+	@Builder.Default
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "client_id")
-	private List<Ticket> tickets;
+	private Set<Ticket> tickets = new HashSet<>();
 }

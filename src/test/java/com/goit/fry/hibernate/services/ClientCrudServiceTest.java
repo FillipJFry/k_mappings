@@ -12,9 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,12 +76,7 @@ class ClientCrudServiceTest {
 		srv.create("Mallory");
 		List<Client> clients = srv.readAll();
 
-		clients.sort(new Comparator<Client>() {
-			@Override
-			public int compare(Client l, Client r) {
-				return (int)(l.getId() - r.getId());
-			}
-		});
+		clients.sort((l, r) -> (int)(l.getId() - r.getId()));
 
 		assertEquals(3, clients.size());
 		assertEquals("Alice", clients.get(0).getName());
@@ -95,9 +89,10 @@ class ClientCrudServiceTest {
 
 		TicketCrudService ticket_srv = new TicketCrudService();
 		Client musk = srv.readByName("Elon Musk");
-		assertNotNull(musk.getTickets());
-		assertEquals(1, musk.getTickets().size());
-		Ticket t1 = musk.getTickets().get(0);
+		Set<Ticket> tickets = musk.getTickets();
+		assertNotNull(tickets);
+		assertEquals(1, tickets.size());
+		Ticket t1 = tickets.iterator().next();
 
 		PlanetCrudService planet_srv = new PlanetCrudService();
 		Planet from = planet_srv.readById("MARS");
@@ -109,20 +104,13 @@ class ClientCrudServiceTest {
 
 		assertEquals(1, musk.getTickets().size());
 		musk = srv.readByName("Elon Musk");
-		List<Ticket> tickets = musk.getTickets();
+		tickets = musk.getTickets();
 		assertNotNull(tickets);
 		assertEquals(3, tickets.size());
 
-		tickets.sort(new Comparator<Ticket>() {
-			@Override
-			public int compare(Ticket l, Ticket r) {
-
-				return (int)(l.getId() - r.getId());
-			}
-		});
-		assertEquals(t1.getId(), tickets.get(0).getId());
-		assertEquals(t2.getId(), tickets.get(1).getId());
-		assertEquals(t3.getId(), tickets.get(2).getId());
+		assertTrue(tickets.contains(t1));
+		assertTrue(tickets.contains(t2));
+		assertTrue(tickets.contains(t3));
 	}
 
 	@Test
